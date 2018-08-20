@@ -102,3 +102,12 @@ venv.bak/
 
 # mypy
 .mypy_cache/
+
+
+.DS_Store
+.ipynb_checkpoints
+.vscode/
+__pycache__/
+
+contacts.csv
+mail_data.py

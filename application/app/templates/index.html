@@ -13,9 +13,31 @@
 
     <body>
         <div>
-            {% if session['logged_in'] == True %}
-                <button class="baton" id="logoutAuth" type="button"><a href="/logout">Logout</a></button>
-            {% endif %}
+            {% block body %}
+                {% if session['logged_in'] %}
+                    <button class="baton" id="logoutAuth" type="button"><a href="/logout">Logout</a></button>
+            
+                    <p>Enter your Gmail credentials</p>
+                    <form id="gmailForm" action="/gmail" method="POST" role="form">
+                        <label class="form-label">Enter Your Email</label>
+                        <input class="form-field" id="gmailname" name="gmailname" placeholder="Enter Email">
+                        <label class="form-label">Enter Password</label>
+                        <input class="form-field" id="gmailpassword" name="gmailpassword" placeholder="Enter Password">
+                        {{ recaptcha }}
+                    </form>
+                        <div class="fbutton">
+                            <button id="submitGmail" type="button" class="baton">Submit</button>
+                        </div>
+                {% endif %}
+
+                {% with messages = get_flashed_messages() %}
+                    {% if messages %}
+                        {% for message in messages %}
+                            <h4>{{ message }}</h4>
+                        {% endfor %}
+                    {% endif %}
+                {% endwith %}
+            {% endblock %}
         </div>
 
         <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js" integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous"></script>

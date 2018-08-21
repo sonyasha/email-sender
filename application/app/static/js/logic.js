@@ -6,3 +6,8 @@ $("#submitAuth").click(function(event) {
     event.preventDefault();
     $("#authorizeForm").submit();		
 });
+
+$("#submitGmail").click(function(event) {
+    event.preventDefault();
+    $("#gmailForm").submit();		
+});

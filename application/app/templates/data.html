@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <title>Send them all</title>
+        <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+        <!-- <link href="https://fonts.googleapis.com/css?family=Hanalei+Fill|Lato:300i,400" rel="stylesheet"> -->
+        <link rel="stylesheet" type="text/css" media="screen" href="{{ url_for('static', filename='styles/main.css') }}"/>
+        <!-- <link rel="shortcut icon" href="{{ url_for('static', filename='styles/img/favicon.ico') }}"> -->
+              
+    </head>
+
+    <body>
+        {% block body %}
+            {% if session['gmail_logged'] %}
+            <button class="baton" id="logoutAuth" type="button"><a href="/logout">Logout</a></button>
+
+            <p>Fill out the fields below</p>
+                <form id="uploadForm" action="/upload" method="POST" role="form" enctype = "multipart/form-data">
+                    <label class="form-label">Upload Message Text</label>
+                    <input class="form-field" type="file" id="text" name="text"/>
+                    <label class="form-label">Upload Contacts File</label>
+                    <input class="form-field" type="file"  id="contacts" name="contacts"/>
+                    <!-- {{ recaptcha }} -->
+                </form>
+                <div class="fbutton">
+                    <button id="submitUpload" type="button" class="baton">Submit</button>
+                </div>
+            {% endif %}
+        {% endblock %}
+
+        <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js" integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous"></script>
+        <script src="{{ url_for('static', filename='js/logic.js') }}"></script>
+    </body>
+</html>

@@ -11,3 +11,8 @@ $("#submitGmail").click(function(event) {
     event.preventDefault();
     $("#gmailForm").submit();		
 });
+
+$("#submitUpload").click(function(event) {
+    event.preventDefault();
+    $("#uploadForm").submit();		
+});

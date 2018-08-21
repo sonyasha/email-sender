@@ -23,7 +23,7 @@
                         <input class="form-field" id="gmailname" name="gmailname" placeholder="Enter Email">
                         <label class="form-label">Enter Password</label>
                         <input class="form-field" id="gmailpassword" name="gmailpassword" placeholder="Enter Password">
-                        {{ recaptcha }}
+                        <!-- {{ recaptcha }} -->
                     </form>
                         <div class="fbutton">
                             <button id="submitGmail" type="button" class="baton">Submit</button>
@@ -41,8 +41,6 @@
         </div>
 
         <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js" integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous"></script>
-        <!-- <script src="https://d3js.org/d3.v5.min.js"></script> -->
-        <!-- <script src="https://d3js.org/d3-scale-chromatic.v1.js"></script> -->
         <script src="{{ url_for('static', filename='js/logic.js') }}"></script>
     </body>
 </html>

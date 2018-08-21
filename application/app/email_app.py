@@ -1,9 +1,10 @@
-from flask import Flask, render_template, session, request, flash
+from flask import Flask, render_template, session, request, flash, jsonify
 from flask_pymongo import PyMongo
 import datetime
 import os
 from flask_recaptcha import ReCaptcha
 from keys import site_key, secret_key
+import smtplib
 
 # MONGO_URL = os.environ.get('MONGODB_URI')
 # if not MONGO_URL:
@@ -19,6 +20,8 @@ recaptcha = ReCaptcha(app=email_app)
 # email_app.config["MONGO_URI"] = MONGO_URL
 mongo = PyMongo(email_app)
 
+server = smtplib.SMTP('smtp.gmail.com', 587)
+gmail_username = None
 
 @email_app.route('/')
 def index():
@@ -27,6 +30,8 @@ def index():
         return render_template('login.html')
     else:
         return render_template('index.html')
+    # session['gmail_logged'] = True
+    # return render_template('data.html')
 
 
 @email_app.route('/login', methods=['POST', 'GET'])
@@ -46,7 +51,8 @@ def do_login():
             else:
                 right_user = False
 
-        if right_user and recaptcha.verify():
+        # if right_user and recaptcha.verify():
+        if right_user:
             session['logged_in'] = True
         else:
             mongo.db.incorrect_logins.insert_one({'username': post_username, 'password': post_password, 'date': datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")})
@@ -54,7 +60,7 @@ def do_login():
             flash('Please try again.')
         return index()
     
-    if request.method == 'GET':
+    else:
         session['logged_in'] = False
         return index()
 
@@ -62,6 +68,7 @@ def do_login():
 @email_app.route('/logout')
 def logout():
     session['logged_in'] = False
+    session['gmail_logged'] = False
     return index()
 
 
@@ -70,26 +77,73 @@ def gmail():
 
     if request.method == 'POST':
 
-        import smtplib
-        server = smtplib.SMTP('smtp.gmail.com', 587)
         server.starttls()
-        
+        global gmail_username
+
         gmail_username = str(request.form['gmailname'])
         gmail_password = str(request.form['gmailpassword'])
 
-        if gmail_username and gmail_password and recaptcha.verify():
+        # if gmail_username and gmail_password and recaptcha.verify():
+        if gmail_username and gmail_password:
             try:
                 server.login(gmail_username, gmail_password)
                 print('logged in')
-                return 'logged in'
+                session['gmail_logged'] = True
+                return render_template('data.html')
             except:
                 flash('The username or password is incorrect.')
                 flash('Please try again.')
                 return index()
 
-    if request.method == 'GET':
+    else:
         session['logged_in'] = False
+        session['gmail_logged'] = False
         return index()
+
+
+@email_app.route('/upload', methods=['POST', 'GET'])
+def upload():
+
+    if request.method == 'POST':
+
+        from string import Template
+        from email.mime.multipart import MIMEMultipart
+        from email.mime.text import MIMEText
+        import csv
+        import io
+
+        message_f = request.files['text']
+        mes_content = message_f.read().decode("UTF8")
+        message_template = Template(mes_content)
+
+        contacts_f = request.files['contacts']
+        stream = io.StringIO(contacts_f.stream.read().decode("UTF8"), newline=None)
+        reader = csv.reader(stream)
+        header = next(reader)
+        contacts = [[line[0], line[1]] for line in reader]
+        
+        for contact in contacts:
+            name = contact[0]
+            email = contact[1]
+
+            message = MIMEMultipart()
+            named_template = message_template.substitute(RECIPIENT_NAME=name.title())
+
+            message['From'] = gmail_username
+            message['To'] = email
+            message['Subject'] = "Test message"
+            message.attach(MIMEText(named_template, 'plain'))
+
+            print(message)
+
+            server.send_message(message)
+
+            del message
+    
+    server.quit()
+
+    return 'all done'
+
 
 
 if __name__ == "__main__":

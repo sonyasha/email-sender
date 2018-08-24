@@ -21,23 +21,18 @@ recaptcha = ReCaptcha(app=email_app)
 mongo = PyMongo(email_app)
 
 server = smtplib.SMTP('smtp.gmail.com', 587)
+server.starttls()
 gmail_username = None
 
 @email_app.route('/')
 def index():
-
-    if not session.get('logged_in'):
-        return render_template('login.html')
-    else:
-        return render_template('index.html')
-    # session['gmail_logged'] = True
-    # return render_template('data.html')
-
+    return render_template('index.html')
 
 @email_app.route('/login', methods=['POST', 'GET'])
 def do_login():
 
     if request.method == 'POST':
+        session['logged_in'] = False
         post_username = str(request.form['username'])
         post_password = str(request.form['password'])
 
@@ -54,14 +49,16 @@ def do_login():
         # if right_user and recaptcha.verify():
         if right_user:
             session['logged_in'] = True
+            return index()
         else:
             mongo.db.incorrect_logins.insert_one({'username': post_username, 'password': post_password, 'date': datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")})
             flash('The username or password is incorrect.')
             flash('Please try again.')
-        return index()
+            return index()
     
     else:
         session['logged_in'] = False
+        session['gmail_logged'] = False
         return index()
 
 
@@ -77,7 +74,8 @@ def gmail():
 
     if request.method == 'POST':
 
-        server.starttls()
+        session['gmail_logged'] = False
+        global server
         global gmail_username
 
         gmail_username = str(request.form['gmailname'])
@@ -86,10 +84,12 @@ def gmail():
         # if gmail_username and gmail_password and recaptcha.verify():
         if gmail_username and gmail_password:
             try:
+                
+                print(server)
                 server.login(gmail_username, gmail_password)
                 print('logged in')
                 session['gmail_logged'] = True
-                return render_template('data.html')
+                return index()
             except:
                 flash('The username or password is incorrect.')
                 flash('Please try again.')
@@ -101,49 +101,66 @@ def gmail():
         return index()
 
 
-@email_app.route('/upload', methods=['POST', 'GET'])
+@email_app.route('/upload', methods=['POST'])
 def upload():
 
     if request.method == 'POST':
 
-        from string import Template
-        from email.mime.multipart import MIMEMultipart
-        from email.mime.text import MIMEText
-        import csv
-        import io
+        try:
+            message_f = request.files['text']
+            contacts_f = request.files['contacts']
 
-        message_f = request.files['text']
-        mes_content = message_f.read().decode("UTF8")
-        message_template = Template(mes_content)
+            from string import Template
+            from email.mime.multipart import MIMEMultipart
+            from email.mime.text import MIMEText
+            import csv
+            import io
 
-        contacts_f = request.files['contacts']
-        stream = io.StringIO(contacts_f.stream.read().decode("UTF8"), newline=None)
-        reader = csv.reader(stream)
-        header = next(reader)
-        contacts = [[line[0], line[1]] for line in reader]
-        
-        for contact in contacts:
-            name = contact[0]
-            email = contact[1]
+        # if request.files['text'] and request.files['contacts']:
+        #     try:
+        #         print('have')
 
-            message = MIMEMultipart()
-            named_template = message_template.substitute(RECIPIENT_NAME=name.title())
+                # message_f = request.files['text']
+                # contacts_f = request.files['contacts']
+            mes_content = message_f.read().decode("UTF8")
+            message_template = Template(mes_content)
 
-            message['From'] = gmail_username
-            message['To'] = email
-            message['Subject'] = "Test message"
-            message.attach(MIMEText(named_template, 'plain'))
+            stream = io.StringIO(contacts_f.stream.read().decode("UTF8"), newline=None)
+            reader = csv.reader(stream)
+            header = next(reader)
+            contacts = [[line[0], line[1]] for line in reader]
+            
+            for contact in contacts:
+                name = contact[0]
+                email = contact[1]
 
-            print(message)
+                message = MIMEMultipart()
+                named_template = message_template.substitute(RECIPIENT_NAME=name.title())
 
-            server.send_message(message)
+                message['From'] = gmail_username
+                message['To'] = email
+                message['Subject'] = "Test message"
+                message.attach(MIMEText(named_template, 'plain'))
 
-            del message
-    
-    server.quit()
+                # server.send_message(message)
+                print(message)
 
-    return 'all done'
+                del message
+                mongo.db.contacts.insert_one({'name': name, 'email': email, 'date': datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")})
 
+                server.quit()
+
+                session['logged_in'] = False
+                session['gmail_logged'] = False
+                flash('Your emals were successfully sent')
+                flash('Thank you for using this app')
+                return index()
+
+        except:
+            print('dont have')
+            flash('Files are not uploaded.')
+            flash('Please try again.')
+            return index()
 
 
 if __name__ == "__main__":

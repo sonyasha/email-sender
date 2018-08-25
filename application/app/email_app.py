@@ -6,18 +6,19 @@ from flask_recaptcha import ReCaptcha
 from keys import site_key, secret_key
 import smtplib
 
-# MONGO_URL = os.environ.get('MONGODB_URI')
-# if not MONGO_URL:
-#     MONGO_URL = "mongodb://localhost:27017/email_app"
+MONGO_URL = os.environ.get('MONGODB_URI')
+if not MONGO_URL:
+    MONGO_URL = "mongodb://localhost:27017/email_app"
 
 email_app = Flask(__name__)
+email_app.secret_key = os.urandom(12)
 
 email_app.config.update({'RECAPTCHA_ENABLED': True,
                    'RECAPTCHA_SITE_KEY': site_key,
                    'RECAPTCHA_SECRET_KEY': secret_key})
 
 recaptcha = ReCaptcha(app=email_app)
-# email_app.config["MONGO_URI"] = MONGO_URL
+email_app.config["MONGO_URI"] = MONGO_URL
 mongo = PyMongo(email_app)
 
 server = smtplib.SMTP('smtp.gmail.com', 587)
@@ -46,8 +47,8 @@ def do_login():
             else:
                 right_user = False
 
-        # if right_user and recaptcha.verify():
-        if right_user:
+        if right_user and recaptcha.verify():
+        # if right_user:
             session['logged_in'] = True
             return index()
         else:
@@ -81,8 +82,8 @@ def gmail():
         gmail_username = str(request.form['gmailname'])
         gmail_password = str(request.form['gmailpassword'])
 
-        # if gmail_username and gmail_password and recaptcha.verify():
-        if gmail_username and gmail_password:
+        if gmail_username and gmail_password and recaptcha.verify():
+        # if gmail_username and gmail_password:
             
             try: 
                 # print(server)
@@ -121,12 +122,6 @@ def upload():
             import csv
             import io
 
-        # if request.files['text'] and request.files['contacts']:
-        #     try:
-        #         print('have')
-
-                # message_f = request.files['text']
-                # contacts_f = request.files['contacts']
             mes_content = message_f.read().decode("UTF8")
             message_template = Template(mes_content)
 
@@ -147,19 +142,19 @@ def upload():
                 message['Subject'] = "Test message"
                 message.attach(MIMEText(named_template, 'plain'))
 
-                # server.send_message(message)
+                server.send_message(message)
                 print(message)
 
                 del message
                 mongo.db.contacts.insert_one({'name': name, 'email': email, 'date': datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")})
 
-                server.quit()
+            server.quit()
 
-                session['logged_in'] = False
-                session['gmail_logged'] = False
-                flash('Your emals were successfully sent')
-                flash('Thank you for using this app')
-                return index()
+            session['logged_in'] = False
+            session['gmail_logged'] = False
+            flash('Your emals were successfully sent')
+            flash('Thank you for using this app')
+            return index()
 
         except:
             # print('dont have')
@@ -169,5 +164,5 @@ def upload():
 
 
 if __name__ == "__main__":
-    email_app.secret_key = os.urandom(12)
+    # email_app.secret_key = os.urandom(12)
     email_app.run(debug=True)

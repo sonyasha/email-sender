@@ -5,7 +5,7 @@
         <title>Send them all</title>
         <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
 
-        <!-- <link href="https://fonts.googleapis.com/css?family=Hanalei+Fill|Lato:300i,400" rel="stylesheet"> -->
+        <link href="https://fonts.googleapis.com/css?family=Cabin" rel="stylesheet">
         <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.2.0/css/all.css" integrity="sha384-hWVjflwFxL6sNzntih27bfxkr27PmbbK/iSvJ+a4+0owXq79v+lsFkW54bOGbiDQ" crossorigin="anonymous">
         <link rel="stylesheet" type="text/css" media="screen" href="{{ url_for('static', filename='styles/main.css') }}"/>
         <!-- <link rel="shortcut icon" href="{{ url_for('static', filename='styles/img/favicon.ico') }}"> -->
@@ -28,7 +28,7 @@
                                     <input class="form-field pass" type="password" id="password" name="password" placeholder="password">
                                     <i class="fa fa-eye"></i>
                                 </div>
-                                <!-- {{ recaptcha }} -->
+                                {{ recaptcha }}
                             </form>
                             <div class="fbutton">
                                 <button id="submitAuth" type="button" class="baton">Submit</button>
@@ -55,7 +55,7 @@
                                     <input class="form-field pass" type="password" id="gmailpassword" name="gmailpassword" placeholder="password">
                                     <i class="fa fa-eye"></i>
                                 </div>
-                                <!-- {{ recaptcha }} -->
+                                {{ recaptcha }}
                             </form>
                             <div class="fbutton">
                                 <button id="submitGmail" type="button" class="baton">Submit</button>

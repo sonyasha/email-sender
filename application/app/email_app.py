@@ -83,17 +83,22 @@ def gmail():
 
         # if gmail_username and gmail_password and recaptcha.verify():
         if gmail_username and gmail_password:
-            try:
-                
-                print(server)
+            
+            try: 
+                # print(server)
                 server.login(gmail_username, gmail_password)
-                print('logged in')
+                # print('logged in')
                 session['gmail_logged'] = True
                 return index()
             except:
                 flash('The username or password is incorrect.')
                 flash('Please try again.')
                 return index()
+        
+        else:
+            flash('The field is empty.')
+            flash('Please try again.')
+            return index()
 
     else:
         session['logged_in'] = False
@@ -157,7 +162,7 @@ def upload():
                 return index()
 
         except:
-            print('dont have')
+            # print('dont have')
             flash('Files are not uploaded.')
             flash('Please try again.')
             return index()

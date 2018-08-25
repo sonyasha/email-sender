@@ -3,7 +3,7 @@ from flask_pymongo import PyMongo
 import datetime
 import os
 from flask_recaptcha import ReCaptcha
-from keys import site_key, secret_key
+# from keys import site_key, secret_key
 import smtplib
 
 MONGO_URL = os.environ.get('MONGODB_URI')
@@ -12,6 +12,9 @@ if not MONGO_URL:
 
 email_app = Flask(__name__)
 email_app.secret_key = os.urandom(12)
+
+site_key = os.environ.get('site_key')
+secret_key = os.environ.get('secter_key')
 
 email_app.config.update({'RECAPTCHA_ENABLED': True,
                    'RECAPTCHA_SITE_KEY': site_key,

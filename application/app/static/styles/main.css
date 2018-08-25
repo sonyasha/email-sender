@@ -43,7 +43,7 @@
 .mess {
     font-size: 18px;
     align-self: center;
-    color: rgb(155, 6, 6);
+    color: rgb(241, 145, 145);
 }
 
 .header {
@@ -54,6 +54,10 @@
 }
 
 .baton {
-    
     margin-bottom: 10px;
+    font-size: 20px;
+}
+
+.form-label {
+    font-size: 15px;
 }

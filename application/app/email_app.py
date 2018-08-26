@@ -14,7 +14,7 @@ email_app = Flask(__name__)
 email_app.secret_key = os.urandom(12)
 
 site_key = os.environ.get('site_key')
-secret_key = os.environ.get('secter_key')
+secret_key = os.environ.get('secret_key')
 
 email_app.config.update({'RECAPTCHA_ENABLED': True,
                    'RECAPTCHA_SITE_KEY': site_key,
@@ -28,9 +28,12 @@ server = smtplib.SMTP('smtp.gmail.com', 587)
 server.starttls()
 gmail_username = None
 
+
 @email_app.route('/')
 def index():
     return render_template('index.html')
+    print(session['logged_in'])
+    print(session['gmail_logged'])
 
 @email_app.route('/login', methods=['POST', 'GET'])
 def do_login():
@@ -46,12 +49,12 @@ def do_login():
         for u in credentials:
             if post_username == u['username'] and post_password == u['password']:
                 right_user = True
+                
                 break
             else:
                 right_user = False
 
         if right_user and recaptcha.verify():
-        # if right_user:
             session['logged_in'] = True
             return index()
         else:
@@ -86,16 +89,13 @@ def gmail():
         gmail_password = str(request.form['gmailpassword'])
 
         if gmail_username and gmail_password and recaptcha.verify():
-        # if gmail_username and gmail_password:
             
             try: 
-                # print(server)
                 server.login(gmail_username, gmail_password)
-                # print('logged in')
                 session['gmail_logged'] = True
                 return index()
             except:
-                flash('The username or password is incorrect.')
+                flash('The email address or password is incorrect.')
                 flash('Please try again.')
                 return index()
         
@@ -160,12 +160,10 @@ def upload():
             return index()
 
         except:
-            # print('dont have')
             flash('Files are not uploaded.')
             flash('Please try again.')
             return index()
 
 
 if __name__ == "__main__":
-    # email_app.secret_key = os.urandom(12)
     email_app.run(debug=True)

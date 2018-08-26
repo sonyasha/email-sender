@@ -9,6 +9,7 @@
         <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.2.0/css/all.css" integrity="sha384-hWVjflwFxL6sNzntih27bfxkr27PmbbK/iSvJ+a4+0owXq79v+lsFkW54bOGbiDQ" crossorigin="anonymous">
         <link rel="stylesheet" type="text/css" media="screen" href="{{ url_for('static', filename='styles/main.css') }}"/>
         <!-- <link rel="shortcut icon" href="{{ url_for('static', filename='styles/img/favicon.ico') }}"> -->
+        <!-- <script src='https://www.google.com/recaptcha/api.js'></script> -->
               
     </head>
 
@@ -45,7 +46,6 @@
                         <button class="baton" id="logoutAuth" type="button"><a href="/logout">Logout</a></button>
                         <div class="cover">
                             
-                    
                             <p class="header">Enter your Gmail credentials</p>
                             <form id="gmailForm" action="/gmail" method="POST" role="form">
                                 <label class="form-label">Enter Your Email</label>

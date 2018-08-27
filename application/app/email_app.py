@@ -1,10 +1,11 @@
-from flask import Flask, render_template, session, request, flash, jsonify
+from flask import Flask, render_template, session, request, flash, jsonify, send_file, send_from_directory
 from flask_pymongo import PyMongo
 import datetime
 import os
 from flask_recaptcha import ReCaptcha
 # from keys import site_key, secret_key
 import smtplib
+import time
 
 MONGO_URL = os.environ.get('MONGODB_URI')
 if not MONGO_URL:
@@ -32,8 +33,6 @@ gmail_username = None
 @email_app.route('/')
 def index():
     return render_template('index.html')
-    print(session['logged_in'])
-    print(session['gmail_logged'])
 
 @email_app.route('/login', methods=['POST', 'GET'])
 def do_login():
@@ -76,7 +75,7 @@ def logout():
     return index()
 
 
-@email_app.route('/gmail', methods=['POST', 'GET'])
+@email_app.route('/gmail', methods=['POST'])
 def gmail():
 
     if request.method == 'POST':
@@ -88,11 +87,12 @@ def gmail():
         gmail_username = str(request.form['gmailname'])
         gmail_password = str(request.form['gmailpassword'])
 
-        if gmail_username and gmail_password and recaptcha.verify():
-            
+        # if gmail_username and gmail_password and recaptcha.verify():
+        if gmail_username and gmail_password:
             try: 
                 server.login(gmail_username, gmail_password)
                 session['gmail_logged'] = True
+                # time.sleep(2)
                 return index()
             except:
                 flash('The email address or password is incorrect.')
@@ -155,7 +155,7 @@ def upload():
 
             session['logged_in'] = False
             session['gmail_logged'] = False
-            flash('Your emals were successfully sent')
+            flash('Your emails were successfully sent!')
             flash('Thank you for using this app')
             return index()
 
@@ -163,6 +163,26 @@ def upload():
             flash('Files are not uploaded.')
             flash('Please try again.')
             return index()
+
+
+@email_app.route('/download_contacts')
+def download_cont():
+    file_path = os.path.abspath(os.getcwd()) + "/app/"
+    try:
+        # return send_file(file_path + 'static/contacts_example.csv', as_attachment=True)
+        # print(file_path)
+        return send_file(file_path + 'static/contacts_example.csv', as_attachment=True)
+    except Exception as e:
+	    return str(e)
+
+
+@email_app.route('/download_message')
+def download_mess():
+    file_path = os.path.abspath(os.getcwd()) + "/app/"
+    try:
+	    return send_from_directory(file_path + 'static', 'message_example.txt', as_attachment=True)
+    except Exception as e:
+	    return str(e)
 
 
 if __name__ == "__main__":

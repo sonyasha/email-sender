@@ -105,3 +105,10 @@
         'lbl1 inp1'
         'lbl2 inp2'
 }
+
+.examples {
+    display: flex;
+    justify-content: space-evenly;
+    color: rgb(255, 252, 247);
+    /* align-items: center; */
+}

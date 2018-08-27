@@ -1,0 +1,6 @@
+Dear ${RECIPIENT_NAME},
+
+text of your message.
+
+Best regards
+Your name

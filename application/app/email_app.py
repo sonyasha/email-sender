@@ -3,9 +3,13 @@ from flask_pymongo import PyMongo
 import datetime
 import os
 from flask_recaptcha import ReCaptcha
-# from keys import site_key, secret_key
 import smtplib
 import time
+from string import Template
+from email.mime.multipart import MIMEMultipart
+from email.mime.text import MIMEText
+import csv
+import io
 
 MONGO_URL = os.environ.get('MONGODB_URI')
 if not MONGO_URL:
@@ -75,7 +79,7 @@ def logout():
     return index()
 
 
-@email_app.route('/gmail', methods=['POST'])
+@email_app.route('/gmail', methods=['POST', 'GET'])
 def gmail():
 
     if request.method == 'POST':
@@ -110,43 +114,46 @@ def gmail():
         return index()
 
 
-@email_app.route('/upload', methods=['POST'])
+@email_app.route('/upload', methods=['POST', 'GET'])
 def upload():
 
     if request.method == 'POST':
+        # print(f'logged-in: {session["logged_in"]}')
+        # print(f'gmail-in: {session["gmail_logged"]}')
 
         try:
             message_f = request.files['text']
             contacts_f = request.files['contacts']
 
-            from string import Template
-            from email.mime.multipart import MIMEMultipart
-            from email.mime.text import MIMEText
-            import csv
-            import io
-
             mes_content = message_f.read().decode("UTF8")
             message_template = Template(mes_content)
-
+            
             stream = io.StringIO(contacts_f.stream.read().decode("UTF8"), newline=None)
             reader = csv.reader(stream)
             header = next(reader)
             contacts = [[line[0], line[1]] for line in reader]
+            # print(f'contacts: {contacts}')
             
             for contact in contacts:
                 name = contact[0]
                 email = contact[1]
+                print(name, email)
 
                 message = MIMEMultipart()
+                # print(f'message1: {message}')
                 named_template = message_template.substitute(RECIPIENT_NAME=name.title())
+                # print(f'named template: {named_template}')
 
+                global gmail_username
+                # print(gmail_username)
                 message['From'] = gmail_username
                 message['To'] = email
                 message['Subject'] = "Test message"
                 message.attach(MIMEText(named_template, 'plain'))
+                # print(f'message2: {message}')
 
                 server.send_message(message)
-                print(message)
+                # print(f'message3: {message}')
 
                 del message
                 mongo.db.contacts.insert_one({'name': name, 'email': email, 'date': datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")})
@@ -164,23 +171,24 @@ def upload():
             flash('Please try again.')
             return index()
 
+    else:
+        flash('Nothing was uploaded.')
+        flash('Please try again.')
+        return index()
+
 
 @email_app.route('/download_contacts')
 def download_cont():
-    file_path = os.path.abspath(os.getcwd()) + "/app/"
     try:
-        # return send_file(file_path + 'static/contacts_example.csv', as_attachment=True)
-        # print(file_path)
-        return send_file(file_path + 'static/contacts_example.csv', as_attachment=True)
+        return send_file(os.path.abspath(os.getcwd()) + '/app/static/contacts_example.csv', as_attachment=True)
     except Exception as e:
 	    return str(e)
 
 
 @email_app.route('/download_message')
 def download_mess():
-    file_path = os.path.abspath(os.getcwd()) + "/app/"
     try:
-	    return send_from_directory(file_path + 'static', 'message_example.txt', as_attachment=True)
+	    return send_from_directory(os.path.abspath(os.getcwd()) + '/app/static', 'message_example.txt', as_attachment=True)
     except Exception as e:
 	    return str(e)
 
